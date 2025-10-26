@@ -1,8 +1,8 @@
 # cc24 - colorchecker24 converter
 
 ## Build
-vcpkg integrate install
-vcpkg install getopt-win32
+vcpkg integrate install\
+vcpkg install getopt-win32\
 vcpkg install opencv4
 
 ## Usage
