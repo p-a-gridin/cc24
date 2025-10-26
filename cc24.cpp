@@ -82,8 +82,6 @@ int process()
         return 1;
     }
 
-    //cv::cvtColor(cmat, cmat, cv::COLOR_RGB2BGR);
-
     cv::Ptr<cv::mcc::CCheckerDetector> detector = cv::mcc::CCheckerDetector::create();
     cv::mcc::TYPECHART chartType = cv::mcc::TYPECHART(0);
     if(!detector->process(cmat, chartType, 1)) {
@@ -102,16 +100,15 @@ int process()
     //printf("Model loss: %g\n", ccModel->getLoss());
 
 
-    cv::Mat wmat;
-    cv::cvtColor(imat, wmat, cv::COLOR_BGR2RGB);
-    wmat.convertTo(wmat, CV_64F);
-    wmat /= 255.;
-    cv::Mat calibratedImage = ccModel->infer(wmat);
-    cv::Mat omat = calibratedImage * 255.;
+    cv::Mat omat;
+    cv::cvtColor(imat, omat, cv::COLOR_BGR2RGB);
+    omat.convertTo(omat, CV_64F);
+    omat /= 255.;
+    cv::Mat calibratedImage = ccModel->infer(omat);
+    omat = calibratedImage * 255.;
     omat.convertTo(omat, CV_8UC3);
-    cv::Mat out_img;
-    cvtColor(omat, out_img, cv::COLOR_RGB2BGR);
-    cv::imwrite(out_file->c_str(), out_img);
+    cvtColor(omat, omat, cv::COLOR_RGB2BGR);
+    cv::imwrite(out_file->c_str(), omat);
 
     return 0;
 }
