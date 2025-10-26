@@ -7,7 +7,7 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/mcc.hpp>
 
-#define _CRT_SECURE_NO_WARNINGS 1
+#pragma warning(disable:4996)  
 
 static std::string *in_file, *out_file, *c24_file;
 
@@ -66,6 +66,8 @@ void usage()
     printf("cc24 cc24 -i input_image -c color-checker-24_image -o output_image\n");
 }
 
+static cv::ccm::ColorCorrectionModel *ccModel;
+
 int process()
 {
     cv::Mat imat = cv::imread(in_file->c_str(), cv::IMREAD_COLOR);
@@ -80,7 +82,7 @@ int process()
         return 1;
     }
 
-    cv::cvtColor(cmat, cmat, cv::COLOR_RGB2BGR);
+    //cv::cvtColor(cmat, cmat, cv::COLOR_RGB2BGR);
 
     cv::Ptr<cv::mcc::CCheckerDetector> detector = cv::mcc::CCheckerDetector::create();
     cv::mcc::TYPECHART chartType = cv::mcc::TYPECHART(0);
@@ -88,6 +90,28 @@ int process()
         printf("ColorChecker 24 photo is bad\n");
         return 1;
     }
+
+    std::vector<cv::Ptr<cv::mcc::CChecker>> checkers = detector->getListColorChecker();
+    cv::Ptr<cv::mcc::CChecker> checker = checkers[0];
+    cv::Mat chartsRGB = checker->getChartsRGB();
+    cv::Mat src = chartsRGB.col(1).clone().reshape(3, chartsRGB.rows / 3);
+
+    src /= 255.;
+    ccModel = new cv::ccm::ColorCorrectionModel(src, cv::ccm::COLORCHECKER_Macbeth);
+    ccModel->run();
+    //printf("Model loss: %g\n", ccModel->getLoss());
+
+
+    cv::Mat wmat;
+    cv::cvtColor(imat, wmat, cv::COLOR_BGR2RGB);
+    wmat.convertTo(wmat, CV_64F);
+    wmat /= 255.;
+    cv::Mat calibratedImage = ccModel->infer(wmat);
+    cv::Mat omat = calibratedImage * 255.;
+    omat.convertTo(omat, CV_8UC3);
+    cv::Mat out_img;
+    cvtColor(omat, out_img, cv::COLOR_RGB2BGR);
+    cv::imwrite(out_file->c_str(), out_img);
 
     return 0;
 }
