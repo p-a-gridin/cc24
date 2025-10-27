@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 
 void usage()
 {
-    printf("cc24 cc24 -i input_image -c color-checker-24_image -o output_image\n");
+    printf("cc24 -i input_image -c color-checker-24_image -o output_image\n");
 }
 
 static cv::ccm::ColorCorrectionModel *ccModel;
